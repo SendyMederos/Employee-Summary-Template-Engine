@@ -4,6 +4,7 @@ const Intern = require("./lib/Intern");
 const inquirer = require("inquirer");
 const path = require("path");
 const fs = require("fs");
+const util = require("util")
 
 const OUTPUT_DIR = path.resolve(__dirname, "output");
 const outputPath = path.join(OUTPUT_DIR, "team.html");
@@ -13,6 +14,92 @@ const render = require("./lib/htmlRenderer");
 
 // Write code to use inquirer to gather information about the development team members,
 // and to create objects for each team member (using the correct classes as blueprints!)
+
+
+const mgquestions = [
+    {
+        type: "input",
+        name: "name",
+        message: "Enter the manager's name"
+    },
+    {
+        type: "input",
+        name: "id",
+        message: "Please enter the employee ID"
+    },
+    {
+        type: "input",
+        name: "email",
+        message: "Enter the employee's e-mail"
+    },
+    {
+        type: "input",
+        name: "office",
+        message: "What is the the mangaer's office number?"
+    },
+    {
+        type: "confirm",
+        name: "addEmployee",
+        message: "Whould you like to add another employee?"
+    },
+]
+const empquestions = [
+
+    {
+        type: "list",
+        name: "typeOfemployee",
+        message: "Is this employee a ____?:",
+        choices: ["Engineer", "Intern"]
+    },
+    {
+        type: "input",
+        name: "name",
+        message: "Enter the employee's name"
+    },
+    {
+        type: "input",
+        name: "id",
+        message: "Please enter the employee's ID"
+    },
+    {
+        type: "input",
+        name: "email",
+        message: "Enter the employee's e-mail"
+    },
+    {
+        type: "input",
+        name: "github",
+        message: "What is the engineer's GitHub?",
+        when: (empquestions) => empquestions.typeOfemployee === "Engineer"
+    },
+    {
+        type: "input",
+        name: "github",
+        message: "What is the intern's school?",
+        when: (empquestions) => empquestions.typeOfemployee === "Intern"
+    },
+
+
+    {
+        type: "confirm",
+        name: "addEmployee",
+        message: "Whould you like to add another employee?"
+    },
+
+]
+
+async function promptUser() {
+    const mgq = await inquirer.prompt(mgquestions)
+    if (mgq.addEmployee === true) {
+        var emq = await inquirer.prompt(empquestions);
+        while (emq.addEmployee === true) {
+            emq = await inquirer.prompt(empquestions);
+        }
+    }
+}
+
+
+promptUser();
 
 // After the user has input all employees desired, call the `render` function (required
 // above) and pass in an array containing all employee objects; the `render` function will
