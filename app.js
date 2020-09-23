@@ -10,8 +10,8 @@ const OUTPUT_DIR = path.resolve(__dirname, "output");
 const outputPath = path.join(OUTPUT_DIR, "team.html");
 
 const render = require("./lib/htmlRenderer");
-
-
+const wirteFileAsync = util.promisify(fs.writeFile)
+const employees = []
 // Write code to use inquirer to gather information about the development team members,
 // and to create objects for each team member (using the correct classes as blueprints!)
 
@@ -44,7 +44,6 @@ const mgquestions = [
     },
 ]
 const empquestions = [
-
     {
         type: "list",
         name: "typeOfemployee",
@@ -74,12 +73,10 @@ const empquestions = [
     },
     {
         type: "input",
-        name: "github",
+        name: "school",
         message: "What is the intern's school?",
         when: (empquestions) => empquestions.typeOfemployee === "Intern"
     },
-
-
     {
         type: "confirm",
         name: "addEmployee",
@@ -90,17 +87,37 @@ const empquestions = [
 
 async function promptUser() {
     const mgq = await inquirer.prompt(mgquestions)
+    employees.push(new Manager(mgq.name, mgq.id, mgq.email, mgq.office))
+
     if (mgq.addEmployee === true) {
         var emq = await inquirer.prompt(empquestions);
+        if (emq.typeOfemployee === "Engineer") {
+            employees.push(new Engineer(emq.name, emq.id, emq.email, emq.github))
+
+        } else { employees.push(new Intern(emq.name, emq.id, emq.email, emq.school)) }
         while (emq.addEmployee === true) {
             emq = await inquirer.prompt(empquestions);
+            if (emq.typeOfemployee === "Engineer") {
+                employees.push(new Engineer(emq.name, emq.id, emq.email, emq.github))
+
+            } else { employees.push(new Intern(emq.name, emq.id, emq.email, emq.school)) }
+
+
         }
     }
 }
+async function init() {
+    try {
+        await promptUser();
+    
+        const rendered = await render(employees)
 
-
-promptUser();
-
+        await wirteFileAsync(outputPath, rendered)
+    } catch (err) {
+        console.log(err)
+    }
+}
+init()
 // After the user has input all employees desired, call the `render` function (required
 // above) and pass in an array containing all employee objects; the `render` function will
 // generate and return a block of HTML including templated divs for each employee!
